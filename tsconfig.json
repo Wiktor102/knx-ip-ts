@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2020",
+		"sourceMap": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"outDir": "dist"
+	},
+	"include": ["src/**/*"],
+	"$schema": "https://json.schemastore.org/tsconfig"
+}
