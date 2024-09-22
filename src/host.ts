@@ -1,10 +1,13 @@
-interface HostProtocol {
+interface IHost {
 	ip: string;
 	port: number;
+}
+
+interface IHostProtocol extends IHost {
 	toBuffer(): Buffer;
 }
 
-class HostProtocolAddressInformation implements HostProtocol {
+class HostProtocolAddressInformation implements IHostProtocol {
 	constructor(
 		public ip: string,
 		public port: number
@@ -31,7 +34,7 @@ class HostProtocolAddressInformation implements HostProtocol {
 	}
 }
 
-class HostProtocolIndependentDevice implements HostProtocol {
+class HostProtocolIndependentDevice implements IHostProtocol {
 	constructor(
 		public ip: string,
 		public port: number,
@@ -44,4 +47,4 @@ class HostProtocolIndependentDevice implements HostProtocol {
 	}
 }
 
-export { HostProtocolAddressInformation, HostProtocolIndependentDevice };
+export { IHost, HostProtocolAddressInformation, HostProtocolIndependentDevice };
