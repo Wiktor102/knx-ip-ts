@@ -1,18 +1,35 @@
 class Ip {
-	constructor(
-		private part1: number,
-		private part2: number,
-		private part3: number,
-		private part4: number
-	) {
-		if (part1 < 0 || part1 > 255 || part2 < 0 || part2 > 255 || part3 < 0 || part3 > 255 || part4 < 0 || part4 > 255) {
+	private part1: number;
+	private part2: number;
+	private part3: number;
+	private part4: number;
+
+	constructor(ipString: string);
+	constructor(part1: number, part2: number, part3: number, part4: number);
+	constructor(part1OrIpString: number | string, part2?: number, part3?: number, part4?: number) {
+		if (typeof part1OrIpString === "string") {
+			const parts = part1OrIpString.split(".").map(Number);
+			if (parts.length !== 4 || parts.some(part => part < 0 || part > 255)) {
+				throw new Error("Invalid IP address");
+			}
+			[this.part1, this.part2, this.part3, this.part4] = parts;
+			return;
+		}
+
+		[this.part1, this.part2, this.part3, this.part4] = [part1OrIpString, part2!, part3!, part4!];
+		if ([this.part1, this.part2, this.part3, this.part4].some(part => part! < 0 || part! > 255)) {
 			throw new Error("Invalid IP address");
 		}
+	}
+
+	toString(): string {
+		return `${this.part1}.${this.part2}.${this.part3}.${this.part4}`;
 	}
 
 	asArray(): number[] {
 		return [this.part1, this.part2, this.part3, this.part4];
 	}
+
 	asBuffer(): Buffer {
 		return Buffer.from(this.asArray());
 	}
