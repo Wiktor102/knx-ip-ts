@@ -1,3 +1,4 @@
+import ServiceFamily from "../../utilities/ServiceFamily.js";
 import DescriptionInformationBlock from "./DescriptionInformationBlock.js";
 
 class SupportedServiceFamilies extends DescriptionInformationBlock {
@@ -5,7 +6,7 @@ class SupportedServiceFamilies extends DescriptionInformationBlock {
 
 	constructor(
 		length: number,
-		public supportedServiceTypes: number[]
+		public supportedServiceFamilies: ServiceFamily[]
 	) {
 		super(length, SupportedServiceFamilies.descriptionType);
 	}
@@ -14,8 +15,8 @@ class SupportedServiceFamilies extends DescriptionInformationBlock {
 		const buffer = Buffer.alloc(this.length);
 		buffer.writeUInt8(this.length, 0);
 
-		for (let i = 0; i < this.supportedServiceTypes.length; i++) {
-			buffer.writeUInt16BE(this.supportedServiceTypes[i], i * 2 + 1);
+		for (let i = 0; i < this.supportedServiceFamilies.length; i++) {
+			buffer.writeUInt16BE(this.supportedServiceFamilies[i].asServiceTypeId(), i * 2 + 1);
 		}
 
 		return buffer;
@@ -26,7 +27,7 @@ class SupportedServiceFamilies extends DescriptionInformationBlock {
 		const supportedServiceTypes = [];
 
 		for (let i = 2; i < structureLength; i += 2) {
-			supportedServiceTypes.push(buffer.readUInt16BE(i));
+			supportedServiceTypes.push(ServiceFamily.fromServiceTypeId(buffer.readUInt16BE(i)));
 		}
 
 		return [new SupportedServiceFamilies(structureLength, supportedServiceTypes), buffer.subarray(structureLength)];
