@@ -10,12 +10,12 @@ class DeviceInfo extends DescriptionInformationBlock {
 	constructor(
 		length: number,
 		public knxMedium: number,
-		public deviceStatus: number,
+		public status: number,
 		public individualAddress: IndividualAddress,
 		public project: ProjectInstallationIdentifier,
 		public serialNumber: string,
-		public multicastAddress: Ip,
-		public mac: string,
+		public routingMulticastAddress: Ip,
+		public macAddress: string,
 		public name: string
 	) {
 		super(length, DeviceInfo.descriptionType);
