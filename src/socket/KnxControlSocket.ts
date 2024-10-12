@@ -1,4 +1,4 @@
-import { Request } from "../message.js";
+import { Request } from "../requests.js";
 import KnxSocket from "./KnxSocket.js";
 import Ip from "../utilities/Ip.js";
 

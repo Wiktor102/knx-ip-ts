@@ -1,9 +1,9 @@
-import udp from "dgram";
-import { Request } from "../message.js";
-import Listenable from "../utilities/listenable.js";
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
+import Listenable from "../utilities/listenable.js";
+import { Request } from "../requests.js";
 import Response from "../messages/Response.js";
 import ResponseParser from "../messages/ResponseParser.js";
+import udp from "dgram";
 
 interface IKnxSocketEvent {
 	ready: [socket: udp.Socket];
