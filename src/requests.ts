@@ -35,7 +35,7 @@ class Request {
 	}
 }
 
-class DiscoverRequest extends Request {
+class SearchRequest extends Request {
 	static serviceType = c.SEARCH_REQUEST;
 
 	constructor(public clientControlEndpoint: HostProtocolAddressInformation) {
@@ -68,4 +68,4 @@ class DisconnectRequest extends Request {
 	}
 }
 
-export { Request, DiscoverRequest, ConnectionRequest, DisconnectRequest };
+export { Request, SearchRequest, ConnectionRequest, DisconnectRequest };

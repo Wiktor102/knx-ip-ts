@@ -1,11 +1,11 @@
 import * as c from "./utilities/constants.js";
 
-import { DiscoverRequest } from "./requests.js";
 import DiscoverResponse from "./messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
 import Ip from "./utilities/Ip.js";
 import KnxControlSocket from "./socket/KnxControlSocket.js";
 import KnxDevice from "./KnxDevice.js";
+import { SearchRequest } from "./requests.js";
 
 interface IKnxOptions {
 	client: {
@@ -35,6 +35,8 @@ class Knx {
 		const broadcastIps: Ip[] = [];
 
 		if (settings.length === 0) {
+			throw new Error("At least one broadcast IP must be specified when using knx.search()!");
+		} else if (settings.length === 1) {
 			settings[0] instanceof Ip ? broadcastIps.push(settings[0]) : broadcastIps.push(new Ip(settings[0]));
 		} else {
 			settings.forEach(setting => {
@@ -52,7 +54,7 @@ class Knx {
 		});
 
 		const hapi = new HostProtocolAddressInformation(this.options.client.ip, this.options.client.searchPort);
-		socket.send(new DiscoverRequest(hapi), ...broadcastIps);
+		socket.send(new SearchRequest(hapi), ...broadcastIps);
 
 		const receiver = socket.receiveAll<DiscoverResponse>(DiscoverResponse, c.SEARCH_TIMEOUT);
 
