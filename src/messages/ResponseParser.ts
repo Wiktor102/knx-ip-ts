@@ -1,9 +1,10 @@
-import Header from "../structures/Header.js";
-import Structure from "../structures/Structure.js";
 import { ChunksTuple, ResponseConstructor } from "../utilities/types/helpers.js";
+
 import ConnectionResponse from "./ConnectionResponse.js";
 import DiscoverResponse from "./DiscoverResponse.js";
+import Header from "../structures/Header.js";
 import Response from "./Response.js";
+import Structure from "../structures/Structure.js";
 
 abstract class ResponseParser {
 	public static parse(buffer: Buffer): Response | Buffer {
@@ -23,12 +24,22 @@ abstract class ResponseParser {
 			// case TunnelingRequest.serviceType:
 			// 	return TunnelingRequest.fromBuffer(body);
 			default:
-				throw new Error(`Received a message of an unsupported service type: ${header.serviceType}`);
+				return Buffer.alloc(0);
+			// throw new Error(`Received a message of an unsupported service type: ${header.serviceType}`);
 		}
 
+		let flag = false;
 		const [structures, rest] = chunkTypes.reduce<[Structure[], Buffer | null]>(
 			([acc, rest], chunkType) => {
-				if (!chunkType) return [acc, rest];
+				if (rest?.length == 0 && !flag) {
+					console.warn("No more response data to parse!");
+					flag = true;
+				}
+
+				if (!chunkType || rest?.length == 0) {
+					return [acc, rest];
+				}
+
 				// console.log(rest ?? body, chunkType.name);
 				const chunk = chunkType.fromBuffer(rest ?? body);
 				return [[...acc, chunk[0]], chunk[1]];
