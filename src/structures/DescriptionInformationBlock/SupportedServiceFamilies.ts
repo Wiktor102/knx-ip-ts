@@ -1,5 +1,5 @@
-import ServiceFamily from "../../utilities/ServiceFamily.js";
 import DescriptionInformationBlock from "./DescriptionInformationBlock.js";
+import ServiceFamily from "../../utilities/ServiceFamily.js";
 
 class SupportedServiceFamilies extends DescriptionInformationBlock {
 	static descriptionType = 0x02;
@@ -16,7 +16,7 @@ class SupportedServiceFamilies extends DescriptionInformationBlock {
 		buffer.writeUInt8(this.length, 0);
 
 		for (let i = 0; i < this.supportedServiceFamilies.length; i++) {
-			buffer.writeUInt16BE(this.supportedServiceFamilies[i].asServiceTypeId(), i * 2 + 1);
+			buffer.writeUInt16BE(this.supportedServiceFamilies[i].toServiceTypeId(), i * 2 + 1);
 		}
 
 		return buffer;
