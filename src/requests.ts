@@ -1,16 +1,19 @@
 import * as c from "./utilities/constants.js";
 
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
+import SearchRequestParameter from "./structures/SearchRequestParameter/SearchRequestParameter.js";
 
 class Request {
+	body: Buffer;
 	payload: Buffer;
 
 	static serviceType: number;
 	serviceType: number;
 
-	constructor(public body: Buffer) {
+	constructor(buffer: Buffer, ...buffers: Buffer[]) {
 		// this.payload = Buffer.concat([this.getHeader(), body]);
-		this.payload = body;
+		this.body = Buffer.concat([buffer, ...buffers]);
+		this.payload = this.body;
 		this.serviceType = (this.constructor as typeof Request).serviceType;
 	}
 
