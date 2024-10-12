@@ -1,14 +1,11 @@
-import { HostProtocolAddressInformation } from "./host.js";
+import { ConnectionRequest, DisconnectRequest } from "./requests.js";
+
+import ConnectionResponse from "./messages/ConnectionResponse.js";
+import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
+import IndividualAddress from "./utilities/IndividualAddress.js";
+import KnxControlSocket from "./socket/KnxControlSocket.js";
+import KnxSocket from "./socket/KnxSocket.js";
 import Listenable from "./utilities/listenable.js";
-import {
-	ConnectionRequest,
-	ConnectionResponse,
-	DisconnectRequest,
-	DiscoverRequest,
-	DiscoverResponse,
-	Response
-} from "./message.js";
-import KnxSocket from "./socket.js";
 
 interface IConnectionOptions {
 	client: {
@@ -17,102 +14,89 @@ interface IConnectionOptions {
 		dataPort: number;
 	};
 	server: {
-		ip?: string;
+		ip: string;
 		port: number;
 	};
-	discovery?: {
-		broadcastIp: string;
-		timeout?: number;
-	};
-}
-
-interface IConnectionInformation {
-	chanel: number;
-	status: number;
-	server: HostProtocolAddressInformation;
-	connectionType: number;
-	individualAddress: number;
 }
 
 interface IConnectionEvents {
 	connected: [];
+	error: [Error];
 	telegram: [Response];
 }
 
 class Connection extends Listenable<IConnectionEvents> {
-	private controlSocket: KnxSocket;
-	private dataSocket: KnxSocket;
-	private connection: IConnectionInformation | null = null;
+	private controlHost: HostProtocolAddressInformation;
+	private dataHost: HostProtocolAddressInformation;
+	private controlSocket: KnxControlSocket;
+	private dataSocket?: KnxSocket;
+
+	public connected = false;
+	public channelId?: number;
+	public type?: number;
+	public individualAddress?: IndividualAddress;
 
 	constructor(private options: IConnectionOptions) {
 		super();
-		Connection.validateOptions(options);
 
-		const clientControlHost = new HostProtocolAddressInformation(options.client.ip, options.client.controlPort);
-		this.controlSocket = new KnxSocket(clientControlHost, options.server.port);
+		this.controlHost = new HostProtocolAddressInformation(options.client.ip, options.client.controlPort);
+		this.dataHost = new HostProtocolAddressInformation(options.client.ip, options.client.dataPort);
 
-		const clientDataHost = new HostProtocolAddressInformation(options.client.ip, options.client.dataPort);
-		this.dataSocket = new KnxSocket(clientDataHost, options.server.port);
+		this.controlSocket = new KnxControlSocket({
+			...options,
+			client: { ip: options.client.ip, port: options.client.controlPort }
+		});
 
-		if (options.server.ip) {
-			const serverHost = new HostProtocolAddressInformation(options.server.ip, options.server.port);
-			this.controlSocket.server = serverHost;
-			this.dataSocket.server = serverHost;
-			this.connect();
-		} else {
-			this.startDiscovery(this.options.discovery!.timeout).then(serverHost => {
-				this.controlSocket.server = serverHost;
-				this.dataSocket.server = serverHost;
-				this.connect();
-			});
-		}
+		this.connect().catch(e => {
+			this.controlSocket.close();
+			this.dispatchEvent("error", e);
+		});
 	}
 
-	private async startDiscovery(timeout: number = 10000): Promise<HostProtocolAddressInformation> {
-		if (!this.options.discovery) {
-			throw new Error("Discovery is not enabled for this Connection!");
-		}
-
-		const discoverMsg = new DiscoverRequest(this.controlSocket.client);
-		this.controlSocket.send(discoverMsg.payload, this.options.discovery.broadcastIp);
-		const response = await this.controlSocket.receive<DiscoverResponse>(DiscoverResponse, timeout);
-		return response.serverHost;
-	}
-
-	private async connect() {
-		const connectRequest = new ConnectionRequest(this.controlSocket.client, this.dataSocket.client);
-		this.controlSocket.send(connectRequest.payload);
-
+	private async connect(): Promise<void> {
+		const connectRequest = new ConnectionRequest(this.controlHost, this.dataHost);
+		this.controlSocket.send(connectRequest);
 		const response = await this.controlSocket.receive<ConnectionResponse>(ConnectionResponse);
 
+		// TODO: Store error codes together with all constants (constants.ts)
 		switch (response.status) {
 			case 0x00:
 				break;
-			case 0x21:
-				throw new Error("Connection refused: Connection type not supported.");
 			case 0x22:
-				throw new Error("Connection refused: Connection options not supported.");
+				throw new Error("Connection refused: Connection type not supported.");
 			case 0x23:
-				throw new Error(
-					"Connection refused: KNXnet/IP server cannot accept the new connection because the maximum number of connections is reached."
-				);
+				throw new Error("Connection refused: Maximum number of connections is reached.");
+			case 0x29:
+				throw new Error("Connection refused: Tunneling layer not supported.");
 			default:
 				throw new Error("Unknown connection error.");
 		}
 
-		this.connection = { ...response };
+		this.dataSocket = new KnxSocket({
+			server: {
+				ip: response.server!.ip,
+				port: response.server!.port
+			},
+			client: { ip: this.options.client.ip, port: this.options.client.dataPort }
+		});
+
+		this.channelId = response.chanelId;
+		this.type = response.connectionType;
+		this.individualAddress = response.individualAddress;
+
+		this.connected = true;
 		this.dispatchEvent("connected");
 
 		this.dataSocket.addEventListener("message", msg => this.dispatchEvent("telegram", msg));
 	}
 
 	public async disconnect() {
-		if (!this.connection) {
+		if (!this.connected) {
 			throw new Error("Cannot disconnect because the connection is already closed or hasn't been established yet.");
 		}
 
-		const disconnectRequest = new DisconnectRequest(this.controlSocket.client, this.connection);
-		this.controlSocket.send(disconnectRequest.payload);
+		const disconnectRequest = new DisconnectRequest(this.controlHost, this.channelId!);
+		this.controlSocket.send(disconnectRequest);
 
 		const response = await this.controlSocket.receive<ConnectionResponse>(ConnectionResponse);
 
@@ -120,17 +104,15 @@ class Connection extends Listenable<IConnectionEvents> {
 			throw new Error("Failed to disconnect. Code: " + response.status);
 		}
 
-		this.connection = null;
-		this.dataSocket.close();
+		this.connected = false;
+		this.dataSocket?.close();
 		this.controlSocket.close();
-	}
 
-	private static validateOptions(options: IConnectionOptions) {
-		if (!options.discovery && !options.server.ip) {
-			throw new Error("Server IP is required if automatic discovery is not enabled");
-		}
+		this.dataSocket = undefined;
+		this.channelId = undefined;
+		this.type = undefined;
+		this.individualAddress = undefined;
 	}
 }
 
-export { Connection, IConnectionOptions, IConnectionInformation };
 export default Connection;
