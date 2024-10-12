@@ -1,11 +1,12 @@
+import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
+
 import IndividualAddress from "../../utilities/IndividualAddress.js";
 import Ip from "../../utilities/Ip.js";
 import ProjectInstallationIdentifier from "../../utilities/ProjectInstallationIdentifier.js";
 import Structure from "../Structure.js";
-import DescriptionInformationBlock from "./DescriptionInformationBlock.js";
 
 class DeviceInfo extends DescriptionInformationBlock {
-	static descriptionType = 0x01;
+	static descriptionType = DescriptionInformationBlockTypes.DEVICE_INFO;
 
 	constructor(
 		length: number,

@@ -1,8 +1,9 @@
-import DescriptionInformationBlock from "./DescriptionInformationBlock.js";
+import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
+
 import ServiceFamily from "../../utilities/ServiceFamily.js";
 
 class SupportedServiceFamilies extends DescriptionInformationBlock {
-	static descriptionType = 0x02;
+	static descriptionType = DescriptionInformationBlockTypes.SUPPORTED_SERVICE_FAMILIES;
 
 	constructor(
 		length: number,
