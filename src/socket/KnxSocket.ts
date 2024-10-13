@@ -74,7 +74,11 @@ class KnxSocket extends Listenable<IKnxSocketEvent> {
 		});
 	}
 
-	async *receiveAll<T>(responseType: any, timeout: number, callback?: () => void): AsyncGenerator<T> {
+	async *receiveAll<T>(
+		responseType: new (...args: any[]) => T,
+		timeout: number,
+		callback?: () => void
+	): AsyncGenerator<T> {
 		let listening = true;
 
 		const timeoutId = setTimeout(() => {
