@@ -12,5 +12,17 @@ type ChunksTuple<T extends readonly any[] = readonly any[]> = {
 	[K in keyof T]: T[K] extends ResponseConstructorTupleItem ? T[K] : never;
 };
 
+type OptionalKeys<T> = {
+	[K in keyof T]-?: undefined extends T[K] ? K : never;
+}[keyof T];
+type RequiredOptionalProps<T> = Required<Pick<T, OptionalKeys<T>>>;
+
 export default MapTupleToInstances;
-export { MapTupleToInstances, InstanceTypeOf, ResponseConstructor, ResponseConstructorTupleItem, ChunksTuple };
+export {
+	MapTupleToInstances,
+	InstanceTypeOf,
+	ResponseConstructor,
+	ResponseConstructorTupleItem,
+	ChunksTuple,
+	RequiredOptionalProps
+};
