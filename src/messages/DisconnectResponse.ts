@@ -1,27 +1,22 @@
-import Response from "./Response.js";
 import * as c from "../utilities/constants.js";
-import MapTupleToInstances from "../utilities/types/helpers.js";
 
+import MapTupleToInstances from "../utilities/types/helpers.js";
+import Response from "./Response.js";
+
+// TODO: Convert the rest into chunks (ex. DisconnectResponsePayload)
 class DisconnectResponse extends Response {
 	static serviceType = c.DISCONNECT_RESPONSE;
 	static chunkTypes = [] as const;
 
-	constructor(chunks: MapTupleToInstances<typeof DisconnectResponse.chunkTypes>) {
+	public channelId: number;
+	public status: number;
+
+	constructor(chunks: MapTupleToInstances<typeof DisconnectResponse.chunkTypes>, rest: Buffer) {
 		super(chunks);
-		// super();
-		// console.log(chunks);
+
+		this.channelId = rest.readUInt8(0);
+		this.status = rest.readUInt8(1);
 	}
-
-	// constructor(
-	// 	public chanel: number,
-	// 	public status: number
-	// ) {
-	// 	super();
-	// }
-
-	// static fromBuffer(body: Buffer): DisconnectResponse {
-	// 	return new DisconnectResponse(body[0], body[1]);
-	// }
 }
 
 export default DisconnectResponse;
