@@ -1,6 +1,6 @@
 import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
 
-import Ip from "../../utilities/Ip.js";
+import Ip from "../../utilities/network/Ip.js";
 
 class IpConfig extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.IP_CONFIG;

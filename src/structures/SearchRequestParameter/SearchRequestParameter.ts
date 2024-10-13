@@ -1,7 +1,7 @@
 import { DescriptionInformationBlockTypes } from "../DescriptionInformationBlock/DescriptionInformationBlock.js";
 import { ISerializable } from "../../utilities/interfaces/ISerializable.js";
 import Mac from "../../utilities/network/Mac.js";
-import ServiceFamily from "../../utilities/ServiceFamily.js";
+import ServiceFamily from "../../utilities/knx/ServiceFamily.js";
 import Structure from "../Structure.js";
 
 enum SearchRequestParameterType {

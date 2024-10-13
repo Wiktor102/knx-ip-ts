@@ -1,4 +1,4 @@
-import IndividualAddress from "../../utilities/IndividualAddress.js";
+import IndividualAddress from "../../utilities/knx/IndividualAddress.js";
 import Structure from "../Structure.js";
 
 class ConnectionResponseDataBlock extends Structure {

@@ -1,6 +1,6 @@
 import { Request } from "../requests.js";
 import KnxSocket from "./KnxSocket.js";
-import Ip from "../utilities/Ip.js";
+import Ip from "../utilities/network/Ip.js";
 
 class KnxControlSocket extends KnxSocket {
 	override send(request: Request, ...ips: Ip[]) {

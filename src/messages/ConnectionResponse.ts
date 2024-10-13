@@ -3,7 +3,7 @@ import * as c from "../utilities/constants.js";
 import ConnectionResponseDataBlock from "../structures/ConnectionResponse/ConnectionResponseDataBlock.js";
 import ConnectionResponseHeader from "../structures/ConnectionResponse/ConnectionResponseHeader.js";
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
-import IndividualAddress from "../utilities/IndividualAddress.js";
+import IndividualAddress from "../utilities/knx/IndividualAddress.js";
 import MapTupleToInstances from "../utilities/types/helpers.js";
 import Response from "./Response.js";
 

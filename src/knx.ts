@@ -4,7 +4,7 @@ import { SearchRequest, SearchRequestExtended } from "./requests.js";
 
 import DiscoverResponse from "./messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
-import Ip from "./utilities/Ip.js";
+import Ip from "./utilities/network/Ip.js";
 import KnxControlSocket from "./socket/KnxControlSocket.js";
 import KnxDevice from "./KnxDevice.js";
 import SearchRequestParameter from "./structures/SearchRequestParameter/SearchRequestParameter.js";

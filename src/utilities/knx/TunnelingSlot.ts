@@ -1,4 +1,4 @@
-import IndividualAddress from "../IndividualAddress.js";
+import IndividualAddress from "./IndividualAddress.js";
 
 class TunnelingSlot {
 	constructor(

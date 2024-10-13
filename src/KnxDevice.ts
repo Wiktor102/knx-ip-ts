@@ -3,11 +3,11 @@ import DescriptionInformationBlock from "./structures/DescriptionInformationBloc
 import DeviceInfo from "./structures/DescriptionInformationBlock/DeviceInfo.js";
 import DiscoverResponse from "./messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
-import IndividualAddress from "./utilities/IndividualAddress.js";
-import Ip from "./utilities/Ip.js";
-import ProjectInstallationIdentifier from "./utilities/ProjectInstallationIdentifier.js";
+import IndividualAddress from "./utilities/knx/IndividualAddress.js";
+import Ip from "./utilities/network/Ip.js";
+import ProjectInstallationIdentifier from "./utilities/knx/ProjectInstallationIdentifier.js";
 import SearchResponseExtended from "./messages/SearchResponseExtended.js";
-import ServiceFamily from "./utilities/ServiceFamily.js";
+import ServiceFamily from "./utilities/knx/ServiceFamily.js";
 import SupportedServiceFamilies from "./structures/DescriptionInformationBlock/SupportedServiceFamilies.js";
 
 class KnxDevice {

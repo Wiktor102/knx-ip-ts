@@ -2,7 +2,7 @@ import { ConnectionRequest, DisconnectRequest } from "./requests.js";
 
 import ConnectionResponse from "./messages/ConnectionResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
-import IndividualAddress from "./utilities/IndividualAddress.js";
+import IndividualAddress from "./utilities/knx/IndividualAddress.js";
 import KnxControlSocket from "./socket/KnxControlSocket.js";
 import KnxSocket from "./socket/KnxSocket.js";
 import Listenable from "./utilities/listenable.js";

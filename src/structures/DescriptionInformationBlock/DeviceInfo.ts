@@ -1,8 +1,8 @@
 import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
 
-import IndividualAddress from "../../utilities/IndividualAddress.js";
-import Ip from "../../utilities/Ip.js";
-import ProjectInstallationIdentifier from "../../utilities/ProjectInstallationIdentifier.js";
+import IndividualAddress from "../../utilities/knx/IndividualAddress.js";
+import Ip from "../../utilities/network/Ip.js";
+import ProjectInstallationIdentifier from "../../utilities/knx/ProjectInstallationIdentifier.js";
 
 class DeviceInfo extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.DEVICE_INFO;

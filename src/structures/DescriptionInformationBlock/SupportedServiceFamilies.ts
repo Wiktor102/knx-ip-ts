@@ -1,6 +1,6 @@
 import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
 
-import ServiceFamily from "../../utilities/ServiceFamily.js";
+import ServiceFamily from "../../utilities/knx/ServiceFamily.js";
 
 class SupportedServiceFamilies extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.SUPPORTED_SERVICE_FAMILIES;

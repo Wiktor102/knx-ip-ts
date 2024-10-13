@@ -1,6 +1,6 @@
 import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from "./DescriptionInformationBlock.js";
 
-import IndividualAddress from "../../utilities/IndividualAddress.js";
+import IndividualAddress from "../../utilities/knx/IndividualAddress.js";
 
 class KnxAddresses extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.KNX_ADDRESSES;
