@@ -1,10 +1,12 @@
 import Connection from "./connection.js";
+import DescriptionInformationBlock from "./structures/DescriptionInformationBlock/DescriptionInformationBlock.js";
 import DeviceInfo from "./structures/DescriptionInformationBlock/DeviceInfo.js";
 import DiscoverResponse from "./messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
 import IndividualAddress from "./utilities/IndividualAddress.js";
 import Ip from "./utilities/Ip.js";
 import ProjectInstallationIdentifier from "./utilities/ProjectInstallationIdentifier.js";
+import SearchResponseExtended from "./messages/SearchResponseExtended.js";
 import ServiceFamily from "./utilities/ServiceFamily.js";
 import SupportedServiceFamilies from "./structures/DescriptionInformationBlock/SupportedServiceFamilies.js";
 
@@ -23,7 +25,12 @@ class KnxDevice {
 
 	connection?: Connection;
 
-	constructor(hpai: HostProtocolAddressInformation, info: DeviceInfo, supported: SupportedServiceFamilies) {
+	constructor(
+		hpai: HostProtocolAddressInformation,
+		info: DeviceInfo,
+		supported: SupportedServiceFamilies,
+		public description?: DescriptionInformationBlock[]
+	) {
 		this.ip = hpai.ip;
 		this.port = hpai.port;
 		this.knxMedium = info.knxMedium;
@@ -63,8 +70,13 @@ class KnxDevice {
 		this.connection = undefined;
 	}
 
-	static fromDiscoverResponse(resp: DiscoverResponse): KnxDevice {
-		return new KnxDevice(resp.host, resp.info, resp.services);
+	static fromSearchResponse(resp: DiscoverResponse | SearchResponseExtended): KnxDevice {
+		return new KnxDevice(
+			resp.host,
+			resp.info,
+			resp.services,
+			"extendedDescription" in resp ? resp.extendedDescription : undefined
+		);
 	}
 }
 

@@ -1,11 +1,14 @@
 import * as c from "./utilities/constants.js";
 
+import { SearchRequest, SearchRequestExtended } from "./requests.js";
+
 import DiscoverResponse from "./messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
 import Ip from "./utilities/Ip.js";
 import KnxControlSocket from "./socket/KnxControlSocket.js";
 import KnxDevice from "./KnxDevice.js";
-import { SearchRequest } from "./requests.js";
+import SearchRequestParameter from "./structures/SearchRequestParameter/SearchRequestParameter.js";
+import SearchResponseExtended from "./messages/SearchResponseExtended.js";
 
 interface IKnxOptions {
 	client: {
@@ -28,6 +31,8 @@ class Knx {
 
 		this.options = options;
 	}
+
+	// TODO: Combine all search and searchExtended into 1 method
 
 	search(broadcastIp: Ip | string): AsyncGenerator<KnxDevice>;
 	search(...broadcastIps: (Ip | string)[]): AsyncGenerator<KnxDevice>;
@@ -59,7 +64,35 @@ class Knx {
 		const receiver = socket.receiveAll<DiscoverResponse>(DiscoverResponse, c.SEARCH_TIMEOUT);
 
 		for await (const response of receiver) {
-			yield KnxDevice.fromDiscoverResponse(response);
+			yield KnxDevice.fromSearchResponse(response);
+		}
+
+		socket.close();
+	}
+
+	async *searchExtended(
+		param: SearchRequestParameter,
+		broadcastIp: Ip | string,
+		...broadcastIps: (Ip | string)[]
+	): AsyncGenerator<KnxDevice> {
+		const allBroadcastIps: Ip[] = [broadcastIp, ...broadcastIps].map(ip => (ip instanceof Ip ? ip : new Ip(ip)));
+
+		if (!this.options.client.searchPort) {
+			throw new Error("options.client.searchPort must be specified when using knx.search()!");
+		}
+
+		const socket = new KnxControlSocket({
+			client: { ip: this.options.client.ip, port: this.options.client.searchPort },
+			server: { ip: broadcastIps[0].toString(), port: this.options.server.port }
+		});
+
+		const hapi = new HostProtocolAddressInformation(this.options.client.ip, this.options.client.searchPort);
+		socket.send(new SearchRequestExtended(hapi, param), ...allBroadcastIps);
+
+		const receiver = socket.receiveAll<SearchResponseExtended>(SearchResponseExtended, c.SEARCH_TIMEOUT);
+
+		for await (const response of receiver) {
+			yield KnxDevice.fromSearchResponse(response);
 		}
 
 		socket.close();
