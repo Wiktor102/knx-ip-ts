@@ -1,4 +1,4 @@
-import { ISerializable } from "./interfaces/ISerializable.js";
+import { ISerializable } from "../interfaces/ISerializable.js";
 
 class ServiceFamily implements ISerializable {
 	constructor(
