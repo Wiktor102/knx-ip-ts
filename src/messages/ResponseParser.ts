@@ -4,6 +4,7 @@ import ConnectionResponse from "./ConnectionResponse.js";
 import DiscoverResponse from "./DiscoverResponse.js";
 import Header from "../structures/Header.js";
 import Response from "./Response.js";
+import SearchResponseExtended from "./SearchResponseExtended.js";
 import Structure from "../structures/Structure.js";
 
 abstract class ResponseParser {
@@ -16,6 +17,10 @@ abstract class ResponseParser {
 			case DiscoverResponse.serviceType:
 				SubClass = DiscoverResponse;
 				chunkTypes = DiscoverResponse.chunkTypes;
+				break;
+			case SearchResponseExtended.serviceType:
+				SubClass = SearchResponseExtended;
+				chunkTypes = SearchResponseExtended.chunkTypes;
 				break;
 			case ConnectionResponse.serviceType:
 				SubClass = ConnectionResponse;
@@ -51,7 +56,7 @@ abstract class ResponseParser {
 			console.warn(`There are still ${rest.length} bytes left in the buffer after parsing the response.`);
 		}
 
-		return new SubClass(structures);
+		return new SubClass(structures, rest);
 	}
 }
 
