@@ -3,7 +3,6 @@ import DescriptionInformationBlock, { DescriptionInformationBlockTypes } from ".
 import IndividualAddress from "../../utilities/IndividualAddress.js";
 import Ip from "../../utilities/Ip.js";
 import ProjectInstallationIdentifier from "../../utilities/ProjectInstallationIdentifier.js";
-import Structure from "../Structure.js";
 
 class DeviceInfo extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.DEVICE_INFO;
@@ -22,7 +21,7 @@ class DeviceInfo extends DescriptionInformationBlock {
 		super(length, DeviceInfo.descriptionType);
 	}
 
-	static fromBuffer(buffer: Buffer): [Structure, Buffer] {
+	static fromBuffer(buffer: Buffer): [DeviceInfo, Buffer] {
 		const structureLength = buffer.readUInt8(0);
 		const knxMedium = buffer.readUInt8(2);
 		const deviceStatus = buffer.readUInt8(3);
