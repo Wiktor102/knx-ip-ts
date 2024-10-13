@@ -31,6 +31,8 @@ export const E_TUNNELING_LAYER = 0x29;
 
 export const SEARCH_REQUEST = 0x0201;
 export const SEARCH_RESPONSE = 0x0202;
+export const SEARCH_REQUEST_EXT = 0x020b;
+export const SEARCH_RESPONSE_EXT = 0x020c;
 export const DESCRIPTION_REQUEST = 0x0203;
 export const DESCRIPTION_RESPONSE = 0x0204;
 export const CONNECT_REQUEST = 0x0205;
