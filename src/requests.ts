@@ -46,6 +46,17 @@ class SearchRequest extends Request {
 	}
 }
 
+class SearchRequestExtended extends Request {
+	static serviceType = c.SEARCH_REQUEST_EXT;
+
+	constructor(
+		public clientControlEndpoint: HostProtocolAddressInformation,
+		public params: SearchRequestParameter
+	) {
+		super(clientControlEndpoint.toBuffer(), params.toBuffer());
+	}
+}
+
 class ConnectionRequest extends Request {
 	static serviceType = c.CONNECT_REQUEST;
 
@@ -71,4 +82,4 @@ class DisconnectRequest extends Request {
 	}
 }
 
-export { Request, SearchRequest, ConnectionRequest, DisconnectRequest };
+export { Request, SearchRequest, SearchRequestExtended, ConnectionRequest, DisconnectRequest };
