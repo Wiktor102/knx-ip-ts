@@ -1,6 +1,7 @@
 import { ConnectionRequest, DisconnectRequest } from "./requests.js";
 
 import ConnectionResponse from "./messages/ConnectionResponse.js";
+import DisconnectResponse from "./messages/DisconnectResponse.js";
 import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
 import IndividualAddress from "./utilities/knx/IndividualAddress.js";
 import KnxControlSocket from "./socket/KnxControlSocket.js";
@@ -26,8 +27,8 @@ interface IConnectionEvents {
 }
 
 class Connection extends Listenable<IConnectionEvents> {
-	private controlHost: HostProtocolAddressInformation;
-	private dataHost: HostProtocolAddressInformation;
+	private controlHost?: HostProtocolAddressInformation;
+	private dataHost?: HostProtocolAddressInformation;
 	private controlSocket: KnxControlSocket;
 	private dataSocket?: KnxSocket;
 
@@ -38,14 +39,14 @@ class Connection extends Listenable<IConnectionEvents> {
 
 	constructor(private options: IConnectionOptions) {
 		super();
-
-		this.controlHost = new HostProtocolAddressInformation(options.client.ip, options.client.controlPort);
-		this.dataHost = new HostProtocolAddressInformation(options.client.ip, options.client.dataPort);
+		this.options.client.dataPort ||= 3672;
 
 		this.controlSocket = new KnxControlSocket({
 			...options,
 			client: { ip: options.client.ip, port: options.client.controlPort }
 		});
+
+		this.controlSocket.ready().then(() => {});
 
 		this.connect().catch(e => {
 			this.controlSocket.close();
@@ -54,7 +55,12 @@ class Connection extends Listenable<IConnectionEvents> {
 	}
 
 	private async connect(): Promise<void> {
+		await this.controlSocket.ready();
+		this.controlHost = new HostProtocolAddressInformation(this.options.client.ip, this.controlSocket.port);
+		this.dataHost = new HostProtocolAddressInformation(this.options.client.ip, this.options.client.dataPort);
+
 		const connectRequest = new ConnectionRequest(this.controlHost, this.dataHost);
+
 		this.controlSocket.send(connectRequest);
 		const response = await this.controlSocket.receive<ConnectionResponse>(ConnectionResponse);
 
@@ -66,6 +72,8 @@ class Connection extends Listenable<IConnectionEvents> {
 				throw new Error("Connection refused: Connection type not supported.");
 			case 0x23:
 				throw new Error("Connection refused: Maximum number of connections is reached.");
+			case 0x25:
+				throw new Error("Connection refused: No more unique connections.");
 			case 0x29:
 				throw new Error("Connection refused: Tunneling layer not supported.");
 			default:
@@ -95,10 +103,10 @@ class Connection extends Listenable<IConnectionEvents> {
 			throw new Error("Cannot disconnect because the connection is already closed or hasn't been established yet.");
 		}
 
-		const disconnectRequest = new DisconnectRequest(this.controlHost, this.channelId!);
+		const disconnectRequest = new DisconnectRequest(this.controlHost!, this.channelId!);
 		this.controlSocket.send(disconnectRequest);
 
-		const response = await this.controlSocket.receive<ConnectionResponse>(ConnectionResponse);
+		const response = await this.controlSocket.receive<DisconnectResponse>(DisconnectResponse);
 
 		if (response.status !== 0x00) {
 			throw new Error("Failed to disconnect. Code: " + response.status);
