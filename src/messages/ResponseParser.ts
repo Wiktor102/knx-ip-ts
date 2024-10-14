@@ -1,6 +1,7 @@
 import { ChunksTuple, ResponseConstructor } from "../utilities/types/helpers.js";
 
 import ConnectionResponse from "./ConnectionResponse.js";
+import DisconnectResponse from "./DisconnectResponse.js";
 import DiscoverResponse from "./DiscoverResponse.js";
 import Header from "../structures/Header.js";
 import Response from "./Response.js";
@@ -26,6 +27,10 @@ abstract class ResponseParser {
 				SubClass = ConnectionResponse;
 				chunkTypes = ConnectionResponse.chunkTypes;
 				break;
+			case DisconnectResponse.serviceType:
+				SubClass = DisconnectResponse;
+				chunkTypes = DisconnectResponse.chunkTypes;
+				break;
 			// case TunnelingRequest.serviceType:
 			// 	return TunnelingRequest.fromBuffer(body);
 			default:
@@ -34,7 +39,7 @@ abstract class ResponseParser {
 		}
 
 		let flag = false;
-		const [structures, rest] = chunkTypes.reduce<[Structure[], Buffer | null]>(
+		const [structures, rest] = chunkTypes.reduce<[Structure[], Buffer]>(
 			([acc, rest], chunkType) => {
 				if (rest?.length == 0 && !flag) {
 					console.warn("No more response data to parse!");
@@ -49,7 +54,7 @@ abstract class ResponseParser {
 				const chunk = chunkType.fromBuffer(rest ?? body);
 				return [[...acc, chunk[0]], chunk[1]];
 			},
-			[[], null]
+			[[], body]
 		);
 
 		if (rest != null && rest.length > 0) {
