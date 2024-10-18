@@ -6,7 +6,10 @@
 		"sourceMap": true,
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
-		"outDir": "dist"
+		"declaration": true,
+		"declarationDir": "dist/types",
+		"outDir": "dist",
+		"typeRoots": ["node_modules/@types"]
 	},
 	"include": ["src/**/*"],
 	"$schema": "https://json.schemastore.org/tsconfig"
