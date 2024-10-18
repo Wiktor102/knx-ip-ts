@@ -7,6 +7,7 @@ import ProjectInstallationIdentifier from "../../utilities/knx/ProjectInstallati
 class DeviceInfo extends DescriptionInformationBlock {
 	static descriptionType = DescriptionInformationBlockTypes.DEVICE_INFO;
 
+	// TODO: Convert mac address to the Mac class
 	constructor(
 		length: number,
 		public knxMedium: number,
