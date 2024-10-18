@@ -1,6 +1,6 @@
 {
-  "name": "knx-lib-ts",
-  "version": "1.0.0",
+  "name": "knx-ip-ts",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -9,8 +9,8 @@
     "run": "tsc && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["knx", "knx-ip", "KNXnet/IP", "knx typescript", "knx ts"],
+  "author": "Wiktor Golicz <wiktorgolicz1@gmail.com> (https://wiktorgolicz.pl)",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.5.5",
