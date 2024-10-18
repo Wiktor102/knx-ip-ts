@@ -2,7 +2,7 @@ import * as c from "../../utilities/constants.js";
 
 import { SearchRequest, SearchRequestExtended } from "../../requests.js";
 
-import Connection from "../../connection.js";
+import Connection from "../../connections/connection.js";
 import DiscoverResponse from "../../messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "../../structures/HostProtocolAddressInformation.js";
 import Ip from "../../utilities/network/Ip.js";

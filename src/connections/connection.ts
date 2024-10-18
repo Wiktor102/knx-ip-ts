@@ -1,12 +1,12 @@
-import { ConnectionRequest, DisconnectRequest } from "./requests.js";
+import { ConnectionRequest, DisconnectRequest } from "../requests.js";
 
-import ConnectionResponse from "./messages/ConnectionResponse.js";
-import DisconnectResponse from "./messages/DisconnectResponse.js";
-import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
-import IndividualAddress from "./utilities/knx/IndividualAddress.js";
-import KnxControlSocket from "./socket/KnxControlSocket.js";
-import KnxSocket from "./socket/KnxSocket.js";
-import Listenable from "./utilities/listenable.js";
+import ConnectionResponse from "../messages/ConnectionResponse.js";
+import DisconnectResponse from "../messages/DisconnectResponse.js";
+import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
+import IndividualAddress from "../utilities/knx/IndividualAddress.js";
+import KnxControlSocket from "../socket/KnxControlSocket.js";
+import KnxSocket from "../socket/KnxSocket.js";
+import Listenable from "../utilities/listenable.js";
 
 interface IConnectionOptions {
 	client: {
@@ -48,10 +48,15 @@ class Connection extends Listenable<IConnectionEvents> {
 
 		this.controlSocket.ready().then(() => {});
 
-		this.connect().catch(e => {
-			this.controlSocket.close();
-			this.dispatchEvent("error", e);
-		});
+		this.connect()
+			.then(() => {
+				this.dispatchEvent("connected");
+				this.dataSocket!.addEventListener("message", msg => this.dispatchEvent("telegram", msg));
+			})
+			.catch(e => {
+				this.controlSocket.close();
+				this.dispatchEvent("error", e);
+			});
 	}
 
 	private async connect(): Promise<void> {
@@ -93,9 +98,6 @@ class Connection extends Listenable<IConnectionEvents> {
 		this.individualAddress = response.individualAddress;
 
 		this.connected = true;
-		this.dispatchEvent("connected");
-
-		this.dataSocket.addEventListener("message", msg => this.dispatchEvent("telegram", msg));
 	}
 
 	public async disconnect() {
