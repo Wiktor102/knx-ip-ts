@@ -41,6 +41,8 @@ export const CONNECTIONSTATE_REQUEST = 0x0207;
 export const CONNECTIONSTATE_RESPONSE = 0x0208;
 export const DISCONNECT_REQUEST = 0x0209;
 export const DISCONNECT_RESPONSE = 0x020a;
+export const TUNNELLING_REQUEST = 0x0420;
+export const TUNNELLING_ACK = 0x0421;
 
 // Host protocol constants
 export const IPV4_UDP = 0x01;
