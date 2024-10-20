@@ -1,6 +1,6 @@
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
 import Listenable from "../utilities/listenable.js";
-import { Request } from "../requests.js";
+import { Request } from "../messages/requests/requests.js";
 import Response from "../messages/Response.js";
 import ResponseParser from "../messages/ResponseParser.js";
 import udp from "dgram";

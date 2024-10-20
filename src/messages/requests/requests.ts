@@ -1,7 +1,7 @@
-import * as c from "./utilities/constants.js";
+import * as c from "../../utilities/constants.js";
 
-import HostProtocolAddressInformation from "./structures/HostProtocolAddressInformation.js";
-import SearchRequestParameter from "./structures/SearchRequestParameter/SearchRequestParameter.js";
+import HostProtocolAddressInformation from "../../structures/HostProtocolAddressInformation.js";
+import SearchRequestParameter from "../../structures/SearchRequestParameter/SearchRequestParameter.js";
 
 class Request {
 	body: Buffer;
@@ -49,10 +49,7 @@ class SearchRequest extends Request {
 class SearchRequestExtended extends Request {
 	static serviceType = c.SEARCH_REQUEST_EXT;
 
-	constructor(
-		public clientControlEndpoint: HostProtocolAddressInformation,
-		public params: SearchRequestParameter
-	) {
+	constructor(public clientControlEndpoint: HostProtocolAddressInformation, public params: SearchRequestParameter) {
 		super(clientControlEndpoint.toBuffer(), params.toBuffer());
 	}
 }
@@ -74,10 +71,7 @@ class ConnectionRequest extends Request {
 class DisconnectRequest extends Request {
 	static serviceType = c.DISCONNECT_REQUEST;
 
-	constructor(
-		public clientControlEndpoint: HostProtocolAddressInformation,
-		chanelId: number
-	) {
+	constructor(public clientControlEndpoint: HostProtocolAddressInformation, chanelId: number) {
 		super(Buffer.concat([Buffer.from([chanelId, 0x00]), clientControlEndpoint.toBuffer()]));
 	}
 }

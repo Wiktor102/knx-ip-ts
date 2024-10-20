@@ -1,6 +1,6 @@
 import * as c from "../../utilities/constants.js";
 
-import { SearchRequest, SearchRequestExtended } from "../../requests.js";
+import { SearchRequest, SearchRequestExtended } from "../../messages/requests/requests.js";
 
 import Connection from "../../connections/connection.js";
 import DiscoverResponse from "../../messages/DiscoverResponse.js";

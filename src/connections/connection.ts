@@ -1,4 +1,4 @@
-import { ConnectionRequest, DisconnectRequest } from "../requests.js";
+import { ConnectionRequest, DisconnectRequest } from "../messages/requests/requests.js";
 
 import ConnectionResponse from "../messages/ConnectionResponse.js";
 import DisconnectResponse from "../messages/DisconnectResponse.js";
