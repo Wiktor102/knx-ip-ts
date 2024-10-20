@@ -7,9 +7,10 @@ import Header from "../structures/Header.js";
 import Response from "./Response.js";
 import SearchResponseExtended from "./SearchResponseExtended.js";
 import Structure from "../structures/Structure.js";
+import TunnellingRequest from "./requests/TunnellingRequest.js";
 
 abstract class ResponseParser {
-	public static parse(buffer: Buffer): Response | Buffer {
+	public static parse(buffer: Buffer): Response {
 		const [header, body] = Header.fromBuffer(buffer);
 		let SubClass: ResponseConstructor;
 		let chunkTypes: ChunksTuple;
@@ -31,11 +32,10 @@ abstract class ResponseParser {
 				SubClass = DisconnectResponse;
 				chunkTypes = DisconnectResponse.chunkTypes;
 				break;
-			// case TunnelingRequest.serviceType:
-			// 	return TunnelingRequest.fromBuffer(body);
+			case TunnellingRequest.serviceType:
+				return TunnellingRequest.fromBuffer(body);
 			default:
-				return Buffer.alloc(0);
-			// throw new Error(`Received a message of an unsupported service type: ${header.serviceType}`);
+				throw new Error(`Received a message of an unsupported service type: ${header.serviceType}`);
 		}
 
 		let flag = false;
