@@ -47,3 +47,18 @@ export const TUNNELLING_ACK = 0x0421;
 // Host protocol constants
 export const IPV4_UDP = 0x01;
 export const IPV4_TCP = 0x02;
+
+// cEMI service constants
+export const L_BUSMON_IND = 0x2b;
+export const L_DATA_REQ = 0x11;
+export const L_DATA_CON = 0x2e;
+export const L_DATA_IND = 0x29;
+export const L_RAW_REQ = 0x10;
+export const L_RAW_IND = 0x1d;
+export const L_RAW_CON = 0x2f;
+export const L_POLL_DATA_REQ = 0x13;
+export const L_POLL_DATA_CON = 0x25;
+export const T_DATA_CONNECTED_REQ = 0x41;
+export const T_DATA_CONNECTED_IND = 0x89;
+export const T_DATA_INDIVIDUAL_REQ = 0x4a;
+export const T_DATA_INDIVIDUAL_IND = 0x94;
