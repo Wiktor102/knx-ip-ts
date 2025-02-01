@@ -50,7 +50,6 @@ abstract class ResponseParser {
 					return [acc, rest];
 				}
 
-				// console.log(rest ?? body, chunkType.name);
 				const chunk = chunkType.fromBuffer(rest ?? body);
 				return [[...acc, chunk[0]], chunk[1]];
 			},

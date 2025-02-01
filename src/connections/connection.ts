@@ -7,6 +7,8 @@ import IndividualAddress from "../utilities/knx/IndividualAddress.js";
 import KnxControlSocket from "../socket/KnxControlSocket.js";
 import KnxSocket from "../socket/KnxSocket.js";
 import Listenable from "../utilities/listenable.js";
+import TunnellingRequest from "../messages/requests/TunnellingRequest.js";
+import cEmi from "../CommonExternalMessageInterface/CEmi.js";
 
 interface IConnectionOptions {
 	client: {
@@ -23,7 +25,7 @@ interface IConnectionOptions {
 interface IConnectionEvents {
 	connected: [];
 	error: [Error];
-	telegram: [Response];
+	telegram: [cEmi];
 }
 
 class Connection extends Listenable<IConnectionEvents> {
@@ -51,7 +53,11 @@ class Connection extends Listenable<IConnectionEvents> {
 		this.connect()
 			.then(() => {
 				this.dispatchEvent("connected");
-				this.dataSocket!.addEventListener("message", msg => this.dispatchEvent("telegram", msg));
+				this.dataSocket!.addEventListener("message", msg => {
+					if (msg instanceof TunnellingRequest) {
+						this.dispatchEvent("telegram", msg.frame);
+					}
+				});
 			})
 			.catch(e => {
 				this.controlSocket.close();
