@@ -1,8 +1,8 @@
 import * as c from "../../utilities/constants.js";
 
+import Connection, { IConnectionOptions } from "../../connections/connection.js";
 import { SearchRequest, SearchRequestExtended } from "../../messages/requests/requests.js";
 
-import Connection from "../../connections/connection.js";
 import DiscoverResponse from "../../messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "../../structures/HostProtocolAddressInformation.js";
 import Ip from "../../utilities/network/Ip.js";
@@ -72,11 +72,12 @@ class KnxIpClient {
 		}
 	}
 
-	connectTo(server: KnxIpServerDescription): Promise<Connection> {
+	connectTo(server: KnxIpServerDescription, options?: Partial<IConnectionOptions>): Promise<Connection> {
 		const serverHapi = server.hostProtocolAddressInformation;
 
 		return new Promise((resolve, reject) => {
 			this.connection = new Connection({
+				...options,
 				client: { ip: this.ip.toString(), controlPort: 0, dataPort: 0 }, // Let the OS choose a port (on our side)
 				server: { ip: serverHapi.ip, port: serverHapi.port }
 			});

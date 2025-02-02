@@ -1,6 +1,11 @@
-import { ChunksTuple, ResponseConstructor } from "../utilities/types/helpers.js";
+import MapTupleToInstances, {
+	ChunksTuple,
+	ResponseConstructor,
+	ResponseConstructorTupleItem
+} from "../utilities/types/helpers.js";
 
 import ConnectionResponse from "./ConnectionResponse.js";
+import DisconnectRequest from "./requests/DisconnectRequest.js";
 import DisconnectResponse from "./DisconnectResponse.js";
 import DiscoverResponse from "./DiscoverResponse.js";
 import Header from "../structures/Header.js";
@@ -28,10 +33,10 @@ abstract class ResponseParser {
 				SubClass = ConnectionResponse;
 				chunkTypes = ConnectionResponse.chunkTypes;
 				break;
+			case DisconnectRequest.serviceType:
+				return DisconnectRequest.fromBuffer(body);
 			case DisconnectResponse.serviceType:
-				SubClass = DisconnectResponse;
-				chunkTypes = DisconnectResponse.chunkTypes;
-				break;
+				return DisconnectResponse.fromBuffer(body);
 			case TunnellingRequest.serviceType:
 				return TunnellingRequest.fromBuffer(body);
 			default:

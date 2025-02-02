@@ -68,12 +68,4 @@ class ConnectionRequest extends Request {
 	}
 }
 
-class DisconnectRequest extends Request {
-	static serviceType = c.DISCONNECT_REQUEST;
-
-	constructor(public clientControlEndpoint: HostProtocolAddressInformation, chanelId: number) {
-		super(Buffer.concat([Buffer.from([chanelId, 0x00]), clientControlEndpoint.toBuffer()]));
-	}
-}
-
-export { Request, SearchRequest, SearchRequestExtended, ConnectionRequest, DisconnectRequest };
+export { Request, SearchRequest, SearchRequestExtended, ConnectionRequest };

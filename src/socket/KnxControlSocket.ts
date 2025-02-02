@@ -3,7 +3,13 @@ import KnxSocket from "./KnxSocket.js";
 import Ip from "../utilities/network/Ip.js";
 
 class KnxControlSocket extends KnxSocket {
-	override send(request: Request, ...ips: Ip[]) {
+	override send(request: Request, ...ips: any[]) {
+		// Check if a callback was provided as the last argument.
+		let callback: ((err: Error | null, bytes: number) => void) | undefined;
+		if (ips.length && typeof ips[ips.length - 1] === "function") {
+			callback = ips.pop();
+		}
+
 		if (ips.length === 0) {
 			ips.push(new Ip(this.server.ip));
 		}
@@ -17,7 +23,7 @@ class KnxControlSocket extends KnxSocket {
 		);
 
 		ips.forEach(ip => {
-			this.socket.send(payload, this.server.port, ip.toString());
+			this.socket.send(payload, this.server.port, ip.toString(), callback);
 		});
 	}
 }

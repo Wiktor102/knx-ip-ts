@@ -1,9 +1,10 @@
+import udp, { Socket } from "dgram";
+
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
 import Listenable from "../utilities/listenable.js";
 import { Request } from "../messages/requests/requests.js";
 import Response from "../messages/Response.js";
 import ResponseParser from "../messages/ResponseParser.js";
-import udp from "dgram";
 
 interface IKnxSocketEvent {
 	ready: [socket: udp.Socket];
@@ -61,23 +62,22 @@ class KnxSocket extends Listenable<IKnxSocketEvent> {
 		return this.socket.address().port;
 	}
 
-	ready(): Promise<void> {
-		return new Promise<void>(resolve => {
+	ready(): Promise<Socket> {
+		return new Promise<Socket>(resolve => {
 			if (this.#socketReady) {
-				resolve();
+				resolve(this.socket);
 				return;
 			}
 
 			this.addEventListener("ready", () => {
-				resolve();
+				resolve(this.socket);
 			});
 		});
 	}
 
-	send(payload: Buffer | Request) {
+	send(payload: Buffer | Request, callback?: (err: Error | null, bytes: number) => void) {
 		if (payload instanceof Request) payload = payload.payload;
-
-		this.socket.send(payload, this.server.port, this.server.ip);
+		this.socket.send(payload, this.server.port, this.server.ip, callback);
 	}
 
 	receive<T>(responseType: new (...args: any[]) => T, timeout?: number | Promise<void>): Promise<T> {

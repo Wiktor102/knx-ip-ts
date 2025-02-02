@@ -1,6 +1,8 @@
-import { ConnectionRequest, DisconnectRequest } from "../messages/requests/requests.js";
+import * as c from "../utilities/constants.js";
 
+import { ConnectionRequest } from "../messages/requests/requests.js";
 import ConnectionResponse from "../messages/ConnectionResponse.js";
+import DisconnectRequest from "../messages/requests/DisconnectRequest.js";
 import DisconnectResponse from "../messages/DisconnectResponse.js";
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
 import IndividualAddress from "../utilities/knx/IndividualAddress.js";
@@ -10,7 +12,8 @@ import Listenable from "../utilities/listenable.js";
 import TunnellingRequest from "../messages/requests/TunnellingRequest.js";
 import cEmi from "../CommonExternalMessageInterface/CEmi.js";
 
-interface IConnectionOptions {
+export interface IConnectionOptions {
+	ignoreIncorrectDisconnectRequests: boolean;
 	client: {
 		ip: string;
 		controlPort: number;
@@ -26,12 +29,14 @@ interface IConnectionEvents {
 	connected: [];
 	error: [Error];
 	telegram: [cEmi];
+	disconnected: [];
 }
 
 class Connection extends Listenable<IConnectionEvents> {
+	private options: IConnectionOptions;
 	private controlHost?: HostProtocolAddressInformation;
 	private dataHost?: HostProtocolAddressInformation;
-	private controlSocket: KnxControlSocket;
+	private controlSocket?: KnxControlSocket;
 	private dataSocket?: KnxSocket;
 
 	public connected = false;
@@ -39,33 +44,44 @@ class Connection extends Listenable<IConnectionEvents> {
 	public type?: number;
 	public individualAddress?: IndividualAddress;
 
-	constructor(private options: IConnectionOptions) {
+	constructor(options: Partial<IConnectionOptions>) {
 		super();
-		this.options.client.dataPort ||= 3672;
+
+		this.options = {
+			ignoreIncorrectDisconnectRequests: options.ignoreIncorrectDisconnectRequests ?? true,
+			client: {
+				ip: options.client!.ip,
+				controlPort: options.client?.controlPort || 0, // will be randomly assigned by the OS
+				dataPort: options.client?.dataPort || 3672
+			},
+			server: {
+				ip: options.server!.ip,
+				port: options.server?.port || 3671
+			}
+		};
 
 		this.controlSocket = new KnxControlSocket({
-			...options,
-			client: { ip: options.client.ip, port: options.client.controlPort }
+			...this.options,
+			client: { ip: this.options.client.ip, port: this.options.client.controlPort }
 		});
 
-		this.controlSocket.ready().then(() => {});
+		this.controlSocket.ready().then(socket => {
+			this.options.client.controlPort ||= socket.address().port;
+		});
 
 		this.connect()
-			.then(() => {
-				this.dispatchEvent("connected");
-				this.dataSocket!.addEventListener("message", msg => {
-					if (msg instanceof TunnellingRequest) {
-						this.dispatchEvent("telegram", msg.frame);
-					}
-				});
-			})
+			.then(() => this.attachEvents())
 			.catch(e => {
-				this.controlSocket.close();
+				this.controlSocket?.close();
 				this.dispatchEvent("error", e);
 			});
 	}
 
 	private async connect(): Promise<void> {
+		if (!this.controlSocket) {
+			throw new Error("Control socket is not initialized or was already closed!");
+		}
+
 		await this.controlSocket.ready();
 		this.controlHost = new HostProtocolAddressInformation(this.options.client.ip, this.controlSocket.port);
 		this.dataHost = new HostProtocolAddressInformation(this.options.client.ip, this.options.client.dataPort);
@@ -106,9 +122,39 @@ class Connection extends Listenable<IConnectionEvents> {
 		this.connected = true;
 	}
 
+	private async attachEvents() {
+		if (!this.controlSocket || !this.dataSocket) {
+			throw new Error("Sockets are not initialized or were already closed!");
+		}
+
+		await Promise.all([this.controlSocket.ready(), this.dataSocket.ready()]);
+
+		this.dispatchEvent("connected");
+		this.controlSocket.addEventListener("message", (response: Response) => {
+			if (response instanceof DisconnectRequest) {
+				this.handleDisconnectRequest(response);
+				return;
+			}
+		});
+
+		this.controlSocket.addEventListener("error", err => {
+			console.error("Control socket error", err);
+		});
+
+		this.dataSocket!.addEventListener("message", msg => {
+			if (msg instanceof TunnellingRequest) {
+				this.dispatchEvent("telegram", msg.frame);
+			}
+		});
+	}
+
 	public async disconnect() {
 		if (!this.connected) {
 			throw new Error("Cannot disconnect because the connection is already closed or hasn't been established yet.");
+		}
+
+		if (!this.controlSocket) {
+			throw new Error("Control socket is not initialized or was already closed!");
 		}
 
 		const disconnectRequest = new DisconnectRequest(this.controlHost!, this.channelId!);
@@ -120,14 +166,51 @@ class Connection extends Listenable<IConnectionEvents> {
 			throw new Error("Failed to disconnect. Code: " + response.status);
 		}
 
+		this.close();
+	}
+
+	private handleDisconnectRequest(request: DisconnectRequest) {
+		if (
+			this.options.ignoreIncorrectDisconnectRequests &&
+			(request.clientControlEndpoint.ip !== this.options.client.ip ||
+				request.clientControlEndpoint.port !== this.options.client.controlPort)
+		) {
+			console.warn(
+				`Received a disconnect request meant for an unknown client (${request.clientControlEndpoint.ip}:${request.clientControlEndpoint.port}). Ignoring.`
+			);
+			return;
+		}
+
+		if (!this.controlSocket) {
+			throw new Error("Control socket is not initialized or was already closed!");
+		}
+
+		const channelCorrect = request.channelId === this.channelId;
+		const response = new DisconnectResponse(request.channelId, channelCorrect ? c.E_NO_ERROR : c.E_CONNECTION_ID); // Return the same (potentially incorrect) id as in the request (as per the spec)
+		console.log("Disconnect response", response);
+		// Pass a callback so the socket waits to close until sending is complete
+		this.controlSocket.send(response, (err: Error) => {
+			if (err) {
+				console.error("Failed to send disconnect response", err);
+			}
+			if (channelCorrect) {
+				this.close();
+			}
+		});
+	}
+
+	private close() {
 		this.connected = false;
 		this.dataSocket?.close();
-		this.controlSocket.close();
+		this.controlSocket?.close();
 
 		this.dataSocket = undefined;
+		this.controlSocket = undefined;
 		this.channelId = undefined;
 		this.type = undefined;
 		this.individualAddress = undefined;
+		this.dispatchEvent("disconnected");
+		this.clearListeners();
 	}
 }
 
