@@ -27,6 +27,7 @@ class KnxIpClient {
 	readonly #options: IKnxClientOptions;
 
 	public connection?: Connection;
+	#disconnectedByUser = false;
 
 	constructor(options: IKnxClientOptions) {
 		this.#options = { ...KnxIpClient.#defaultOptions, ...options };
@@ -82,18 +83,27 @@ class KnxIpClient {
 				server: { ip: serverHapi.ip, port: serverHapi.port }
 			});
 
-			this.connection!.addEventListener("error", e => {
+			this.connection.addEventListener("error", e => {
 				this.connection = undefined;
 				reject(e);
 			});
 
-			this.connection!.addEventListener("connected", () => {
+			this.connection.addEventListener("connected", () => {
+				this.connection?.addEventListener("disconnected", () => {
+					if (this.#disconnectedByUser) return;
+					try {
+						this.disconnect(true);
+						throw new Error("Connection lost");
+					} catch (e) {}
+				});
+
 				resolve(this.connection!);
 			});
 		});
 	}
 
-	disconnect(): void {
+	disconnect(manually?: boolean): void {
+		this.#disconnectedByUser = !manually;
 		if (this.connection) {
 			this.connection.disconnect();
 		}

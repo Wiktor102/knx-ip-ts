@@ -5,6 +5,8 @@ import MapTupleToInstances, {
 } from "../utilities/types/helpers.js";
 
 import ConnectionResponse from "./ConnectionResponse.js";
+import ConnectionStateRequest from "./requests/ConnectionStateRequest.js";
+import ConnectionStateResponse from "./ConnectionStateResponse.js";
 import DisconnectRequest from "./requests/DisconnectRequest.js";
 import DisconnectResponse from "./DisconnectResponse.js";
 import DiscoverResponse from "./DiscoverResponse.js";
@@ -21,6 +23,7 @@ abstract class ResponseParser {
 		let chunkTypes: ChunksTuple;
 
 		switch (header.serviceType) {
+			//* Search
 			case DiscoverResponse.serviceType:
 				SubClass = DiscoverResponse;
 				chunkTypes = DiscoverResponse.chunkTypes;
@@ -29,14 +32,26 @@ abstract class ResponseParser {
 				SubClass = SearchResponseExtended;
 				chunkTypes = SearchResponseExtended.chunkTypes;
 				break;
+
+			//* Connection
 			case ConnectionResponse.serviceType:
 				SubClass = ConnectionResponse;
 				chunkTypes = ConnectionResponse.chunkTypes;
 				break;
+
+			//* Connection state
+			case ConnectionStateRequest.serviceType:
+				return ConnectionStateRequest.fromBuffer(body);
+			case ConnectionStateResponse.serviceType:
+				return ConnectionStateResponse.fromBuffer(body);
+
+			//* Disconnect
 			case DisconnectRequest.serviceType:
 				return DisconnectRequest.fromBuffer(body);
 			case DisconnectResponse.serviceType:
 				return DisconnectResponse.fromBuffer(body);
+
+			//* Tunnelling
 			case TunnellingRequest.serviceType:
 				return TunnellingRequest.fromBuffer(body);
 			default:

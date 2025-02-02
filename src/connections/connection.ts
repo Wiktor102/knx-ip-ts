@@ -2,6 +2,8 @@ import * as c from "../utilities/constants.js";
 
 import { ConnectionRequest } from "../messages/requests/requests.js";
 import ConnectionResponse from "../messages/ConnectionResponse.js";
+import ConnectionStateRequest from "../messages/requests/ConnectionStateRequest.js";
+import ConnectionStateResponse from "../messages/ConnectionStateResponse.js";
 import DisconnectRequest from "../messages/requests/DisconnectRequest.js";
 import DisconnectResponse from "../messages/DisconnectResponse.js";
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
@@ -38,6 +40,7 @@ class Connection extends Listenable<IConnectionEvents> {
 	private dataHost?: HostProtocolAddressInformation;
 	private controlSocket?: KnxControlSocket;
 	private dataSocket?: KnxSocket;
+	private heartbeatTimer?: NodeJS.Timeout;
 
 	public connected = false;
 	public channelId?: number;
@@ -130,6 +133,8 @@ class Connection extends Listenable<IConnectionEvents> {
 		await Promise.all([this.controlSocket.ready(), this.dataSocket.ready()]);
 
 		this.dispatchEvent("connected");
+		this.startHeartbeatMonitoring();
+
 		this.controlSocket.addEventListener("message", (response: Response) => {
 			if (response instanceof DisconnectRequest) {
 				this.handleDisconnectRequest(response);
@@ -146,6 +151,47 @@ class Connection extends Listenable<IConnectionEvents> {
 				this.dispatchEvent("telegram", msg.frame);
 			}
 		});
+	}
+
+	private startHeartbeatMonitoring() {
+		this.heartbeatTimer = setInterval(() => {
+			this.checkHeartbeat().catch(err => {
+				console.error("Heartbeat check failed:", err);
+				this.dispatchEvent("error", err);
+				this.disconnect();
+			});
+		}, 60 * 1000);
+	}
+
+	private async checkHeartbeat(): Promise<void> {
+		if (!this.controlSocket || !this.channelId || !this.controlHost) {
+			throw new Error("Control socket is not initialized or was already closed!");
+		}
+
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			try {
+				const heartbeatRequest = new ConnectionStateRequest(this.channelId, this.controlHost);
+				this.controlSocket.send(heartbeatRequest);
+				const responsePromise = this.controlSocket.receive<ConnectionStateResponse>(ConnectionStateResponse);
+				const timeoutPromise = new Promise<never>((_, reject) =>
+					setTimeout(
+						() => reject(new Error("Timeout waiting for heartbeat response")),
+						c.CONNECTIONSTATE_REQUEST_TIMEOUT * 1000
+					)
+				);
+				const response = await Promise.race([responsePromise, timeoutPromise]);
+				if (response.status !== c.E_NO_ERROR) {
+					throw new Error(`Heartbeat error response: ${response.status}`);
+				}
+
+				return; // Successful heartbeat
+			} catch (err) {
+				if (attempt === 3) {
+					console.error("Heartbeat failed after 3 attempts, disconnecting...");
+					this.disconnect();
+				}
+			}
+		}
 	}
 
 	public async disconnect() {
@@ -203,6 +249,10 @@ class Connection extends Listenable<IConnectionEvents> {
 		this.connected = false;
 		this.dataSocket?.close();
 		this.controlSocket?.close();
+		if (this.heartbeatTimer) {
+			clearInterval(this.heartbeatTimer);
+			this.heartbeatTimer = undefined;
+		}
 
 		this.dataSocket = undefined;
 		this.controlSocket = undefined;
