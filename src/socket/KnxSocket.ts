@@ -44,8 +44,13 @@ class KnxSocket extends Listenable<IKnxSocketEvent> {
 		});
 
 		this.socket.on("message", msg => {
-			const parsed = ResponseParser.parse(msg);
-			this.dispatchEvent("message", parsed);
+			try {
+				const parsed = ResponseParser.parse(msg);
+				this.dispatchEvent("message", parsed);
+			} catch (e) {
+				console.error("Error parsing message: ", e);
+				this.dispatchEvent("error", e as Error);
+			}
 		});
 
 		this.socket.on("error", error => {
