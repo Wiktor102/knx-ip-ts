@@ -48,9 +48,11 @@ class SearchRequest extends Request {
 
 class SearchRequestExtended extends Request {
 	static serviceType = c.SEARCH_REQUEST_EXT;
+	params: SearchRequestParameter[];
 
-	constructor(public clientControlEndpoint: HostProtocolAddressInformation, public params: SearchRequestParameter) {
-		super(clientControlEndpoint.toBuffer(), params.toBuffer());
+	constructor(public clientControlEndpoint: HostProtocolAddressInformation, ...params: SearchRequestParameter[]) {
+		super(clientControlEndpoint.toBuffer(), ...params.map(p => p.toBuffer()));
+		this.params = params;
 	}
 }
 

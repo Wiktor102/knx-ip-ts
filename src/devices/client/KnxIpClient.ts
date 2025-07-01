@@ -19,7 +19,7 @@ interface IKnxClientOptions {
 
 interface ISearchOptions {
 	searchEndpointPort?: number;
-	extendedSearchParameter?: SearchRequestParameter;
+	extendedSearchParameter?: SearchRequestParameter[];
 }
 
 class KnxIpClient {
@@ -52,7 +52,7 @@ class KnxIpClient {
 		await socket.ready();
 		const hapi = new HostProtocolAddressInformation(this.ip.toString(), socket.port);
 		const request = options.extendedSearchParameter
-			? new SearchRequestExtended(hapi, options.extendedSearchParameter)
+			? new SearchRequestExtended(hapi, ...options.extendedSearchParameter)
 			: new SearchRequest(hapi);
 		socket.send(request, ...allBroadcastIps);
 
