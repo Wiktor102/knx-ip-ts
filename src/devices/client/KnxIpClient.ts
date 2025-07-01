@@ -3,13 +3,13 @@ import * as c from "../../utilities/constants.js";
 import Connection, { IConnectionOptions } from "../../connections/connection.js";
 import { SearchRequest, SearchRequestExtended } from "../../messages/requests/requests.js";
 
-import DiscoverResponse from "../../messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "../../structures/HostProtocolAddressInformation.js";
 import Ip from "../../utilities/network/Ip.js";
 import KnxControlSocket from "../../socket/KnxControlSocket.js";
 import KnxIpServerDescription from "../server/KnxIpServerDescription.js";
 import { RequiredOptionalProps } from "../../utilities/types/helpers.js";
 import SearchRequestParameter from "../../structures/SearchRequestParameter/SearchRequestParameter.js";
+import SearchResponse from "../../messages/SearchResponse.js";
 import SearchResponseExtended from "../../messages/SearchResponseExtended.js";
 
 interface IKnxClientOptions {
@@ -56,11 +56,11 @@ class KnxIpClient {
 			: new SearchRequest(hapi);
 		socket.send(request, ...allBroadcastIps);
 
-		let receiver: AsyncGenerator<[DiscoverResponse | SearchResponseExtended, () => void], void, void>;
+		let receiver: AsyncGenerator<[SearchResponse | SearchResponseExtended, () => void], void, void>;
 		if (options.extendedSearchParameter) {
 			receiver = socket.receiveAll<SearchResponseExtended>(SearchResponseExtended, c.SEARCH_TIMEOUT);
 		} else {
-			receiver = socket.receiveAll<DiscoverResponse>(DiscoverResponse, c.SEARCH_TIMEOUT);
+			receiver = socket.receiveAll<SearchResponse>(SearchResponse, c.SEARCH_TIMEOUT);
 		}
 
 		try {

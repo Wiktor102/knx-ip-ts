@@ -9,9 +9,9 @@ import ConnectionStateRequest from "./requests/ConnectionStateRequest.js";
 import ConnectionStateResponse from "./ConnectionStateResponse.js";
 import DisconnectRequest from "./requests/DisconnectRequest.js";
 import DisconnectResponse from "./DisconnectResponse.js";
-import DiscoverResponse from "./DiscoverResponse.js";
 import Header from "../structures/Header.js";
 import Response from "./Response.js";
+import SearchResponse from "./SearchResponse.js";
 import SearchResponseExtended from "./SearchResponseExtended.js";
 import Structure from "../structures/Structure.js";
 import TunnellingRequest from "./requests/TunnellingRequest.js";
@@ -24,9 +24,9 @@ abstract class ResponseParser {
 
 		switch (header.serviceType) {
 			//* Search
-			case DiscoverResponse.serviceType:
-				SubClass = DiscoverResponse;
-				chunkTypes = DiscoverResponse.chunkTypes;
+			case SearchResponse.serviceType:
+				SubClass = SearchResponse;
+				chunkTypes = SearchResponse.chunkTypes;
 				break;
 			case SearchResponseExtended.serviceType:
 				SubClass = SearchResponseExtended;

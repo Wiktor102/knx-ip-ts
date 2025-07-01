@@ -1,11 +1,11 @@
 import DescriptionInformationBlock from "../../structures/DescriptionInformationBlock/DescriptionInformationBlock.js";
 import DeviceInfo from "../../structures/DescriptionInformationBlock/DeviceInfo.js";
-import DiscoverResponse from "../../messages/DiscoverResponse.js";
 import HostProtocolAddressInformation from "../../structures/HostProtocolAddressInformation.js";
 import IndividualAddress from "../../utilities/knx/IndividualAddress.js";
 import Ip from "../../utilities/network/Ip.js";
 import Mac from "../../utilities/network/Mac.js";
 import ProjectInstallationIdentifier from "../../utilities/knx/ProjectInstallationIdentifier.js";
+import SearchResponse from "../../messages/SearchResponse.js";
 import SearchResponseExtended from "../../messages/SearchResponseExtended.js";
 import ServiceFamily from "../../utilities/knx/ServiceFamily.js";
 import SupportedServiceFamilies from "../../structures/DescriptionInformationBlock/SupportedServiceFamilies.js";
@@ -75,7 +75,7 @@ class KnxIpServerDescription {
 		return this.#description.find(description => description instanceof type) as T | undefined;
 	}
 
-	static fromSearchResponse(response: DiscoverResponse | SearchResponseExtended): KnxIpServerDescription {
+	static fromSearchResponse(response: SearchResponse | SearchResponseExtended): KnxIpServerDescription {
 		let description: DescriptionInformationBlock[] = [];
 		if ("extendedDescription" in response) description = response.extendedDescription;
 		return new KnxIpServerDescription(response.host, response.info, response.services, description);

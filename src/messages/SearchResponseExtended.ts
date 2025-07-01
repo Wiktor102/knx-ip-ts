@@ -5,24 +5,17 @@ import DescriptionInformationBlockParser from "../structures/DescriptionInformat
 import DeviceInfo from "../structures/DescriptionInformationBlock/DeviceInfo.js";
 import HostProtocolAddressInformation from "../structures/HostProtocolAddressInformation.js";
 import MapTupleToInstances from "../utilities/types/helpers.js";
-import Response from "./Response.js";
+import SearchResponse from "./SearchResponse.js";
 import SupportedServiceFamilies from "../structures/DescriptionInformationBlock/SupportedServiceFamilies.js";
 
-class SearchResponseExtended extends Response {
+class SearchResponseExtended extends SearchResponse {
 	static readonly serviceType = c.SEARCH_RESPONSE_EXT;
 	static chunkTypes = [HostProtocolAddressInformation, DeviceInfo, SupportedServiceFamilies] as const;
 
-	host: HostProtocolAddressInformation;
-	info: DeviceInfo;
-	services: SupportedServiceFamilies;
 	extendedDescription: DescriptionInformationBlock[];
 
 	constructor(chunks: MapTupleToInstances<typeof SearchResponseExtended.chunkTypes>, rest?: Buffer | null) {
 		super(chunks);
-
-		this.host = chunks[0];
-		this.info = chunks[1];
-		this.services = chunks[2];
 
 		this.extendedDescription =
 			rest?.reduce<[DescriptionInformationBlock[], Buffer]>(
