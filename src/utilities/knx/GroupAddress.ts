@@ -28,6 +28,12 @@ class GroupAddress {
 
 		return new GroupAddress(mainGroup, middleGroup, subGroup);
 	}
+
+	equals(other: GroupAddress): boolean {
+		return (
+			this.mainGroup === other.mainGroup && this.middleGroup === other.middleGroup && this.subGroup === other.subGroup
+		);
+	}
 }
 
 export default GroupAddress;
