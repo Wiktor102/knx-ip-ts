@@ -1,9 +1,5 @@
 class IndividualAddress {
-	constructor(
-		public area: number,
-		public line: number,
-		public device: number
-	) {
+	constructor(public area: number, public line: number, public device: number) {
 		if (area < 0 || area > 15) {
 			throw new Error("Area must be between 0 and 15");
 		}
@@ -31,6 +27,10 @@ class IndividualAddress {
 		const device = buffer.readUInt8(1);
 
 		return new IndividualAddress(area, line, device);
+	}
+
+	equals(other: IndividualAddress): boolean {
+		return this.area === other.area && this.line === other.line && this.device === other.device;
 	}
 }
 
