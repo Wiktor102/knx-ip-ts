@@ -39,6 +39,7 @@ class KnxSocket extends Listenable<IKnxSocketEvent> {
 
 		this.socket.once("listening", () => {
 			this.socket.setBroadcast(true);
+			this.socket.setMulticastInterface(this.client.ip);
 			this.dispatchEvent("ready", this.socket);
 			this.#socketReady = true;
 		});
